@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Scatter } from 'recharts';
+import React, { useCallback, useMemo, useState } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import regression from 'regression';
 
 import './App.css';
@@ -17,16 +17,16 @@ const App: React.FC = () => {
     { injections: 3, pulseWidth: 1.5, totalMass: 0.99 },
   ]);
 
-  const handleInputChange = (index: number, field: keyof InjectorTestRow, value: string) => {
+  const handleInputChange = useCallback((index: number, field: keyof InjectorTestRow, value: string) => {
     const newRows = [...rows];
     newRows[index][field] = parseFloat(value);
     setRows(newRows);
-  };
+  }, [rows]);
 
-  const removeRow = (index: number) => {
+  const removeRow = useCallback((index: number) => {
     const newRows = rows.filter((_, i) => i !== index);
     setRows(newRows);
-  };
+  }, [rows]);
 
   const addRow = () => {
     setRows([...rows, { injections: 1, pulseWidth: 1.0, totalMass: 0.0 }]);
@@ -80,7 +80,7 @@ const App: React.FC = () => {
             <div>{pctError.toFixed(1)}</div>
             <button onClick={() => removeRow(index)} className="text-red-500 text-lg">&times;</button>
           </div>;
-  }), [rows]);
+  }), [rows, handleInputChange, regressionResult, removeRow]);
 
   return (
     <div className="p-4 grid gap-4">
@@ -110,7 +110,6 @@ const App: React.FC = () => {
           <YAxis type="number" yAxisId="left" label={{ value: 'mass per pulse (mg)', angle: -90, position: 'insideLeft' }} domain={['auto', 'auto']} />
           <YAxis type="number" yAxisId="right" orientation='right' label={{ value: 'avg flow (g/s)', angle: -90, position: 'insideLeft' }} domain={['auto', 'auto']} />
 
-          {/* <Tooltip /> */}
           <Legend />
           <Line yAxisId="left" dataKey="massPerPulse" data={dataForPlot} stroke="#008888" name="Measured" />
           <Line yAxisId="right" dataKey="avgFlow" data={dataForPlot2} stroke="#aa0000" name="Avg Flow" />
