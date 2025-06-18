@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Scatter } from 'recharts';
 import regression from 'regression';
 
+import './App.css';
+
 type InjectorTestRow = {
   injections: number;
   pulseWidth: number;
