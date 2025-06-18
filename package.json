@@ -3,14 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.66",
+    "@types/react": "^18.2.41",
+    "@types/react-dom": "^18.2.17",
+    "@types/regression": "^2.0.6",
+    "async-mutex": "^0.4.0",
+    "buffer": "^6.0.3",
+    "google-protobuf": "^3.21.2",
+    "intel-hex": "^0.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "recharts": "^2.15.3",
+    "regression": "^2.0.1",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
@@ -39,6 +48,10 @@
     ]
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.17"
+    "@types/dom-serial": "^1.0.6",
+    "@types/google-protobuf": "^3.15.12",
+    "protoc-gen-grpc-web": "^1.4.2",
+    "tailwindcss": "^3.4.17",
+    "ts-protoc-gen": "^0.15.0"
   }
 }
