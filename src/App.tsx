@@ -5,17 +5,19 @@ import regression from 'regression';
 import './App.css';
 
 type InjectorTestRow = {
+  injections?: number;
+  pulseWidth?: number;
+  totalMass?: number;
+};
+
+type InjectorTestRowCleaned = {
   injections: number;
   pulseWidth: number;
   totalMass: number;
 };
 
 const App: React.FC = () => {
-  const [rows, setRows] = useState<InjectorTestRow[]>([
-    { injections: 1, pulseWidth: 2.0, totalMass: 0.45 },
-    { injections: 2, pulseWidth: 2.0, totalMass: 0.90 },
-    { injections: 3, pulseWidth: 1.5, totalMass: 0.99 },
-  ]);
+  const [rows, setRows] = useState<InjectorTestRow[]>([{ }]);
 
   const handleInputChange = useCallback((index: number, field: keyof InjectorTestRow, value: string) => {
     const newRows = [...rows];
@@ -29,15 +31,23 @@ const App: React.FC = () => {
   }, [rows]);
 
   const addRow = () => {
-    setRows([...rows, { injections: 1, pulseWidth: 1.0, totalMass: 0.0 }]);
+    setRows([...rows, { }]);
   };
 
-  const dataForPlot = rows.map(row => {
+  const validRows = useMemo((): InjectorTestRowCleaned[] => {
+    return rows.filter(row => 
+      row.injections && row.pulseWidth && row.totalMass &&
+      !isNaN(row.injections) && !isNaN(row.pulseWidth) && !isNaN(row.totalMass)
+    )
+    .map(r => ({injections: r.injections!, pulseWidth: r.pulseWidth!, totalMass: r.totalMass!} as InjectorTestRowCleaned));
+  }, [rows]);
+
+  const dataForPlot = validRows.map(row => {
     const massPerPulse = row.totalMass / row.injections;
     return { pulseWidth: row.pulseWidth, massPerPulse: 1e3 * massPerPulse };
   });
 
-  const dataForPlot2 = rows.map(row => {
+  const avgFlowData = validRows.map(row => {
     const totalOpenTime = row.injections * row.pulseWidth;
     return { pulseWidth: row.pulseWidth, avgFlow: 1e3 * row.totalMass / totalOpenTime };
   })
@@ -52,8 +62,8 @@ const App: React.FC = () => {
   }));
 
   const tableRows = useMemo(() => rows.map((row, index) => {
-    const actualMassMg = 1e3 * row.totalMass / row.injections;
-    const modelMass = regressionResult.predict(row.pulseWidth)[1];
+    const actualMassMg = 1e3 * row.totalMass! / row.injections!;
+    const modelMass = regressionResult.predict(row.pulseWidth!)[1];
     const pctError = 100 * (modelMass - actualMassMg) / actualMassMg;
 
     return <div key={index} className="grid grid-cols-7 gap-2 items-center mb-1 text-sm">
@@ -112,7 +122,7 @@ const App: React.FC = () => {
 
           <Legend />
           <Line yAxisId="left" dataKey="massPerPulse" data={dataForPlot} stroke="#008888" name="Measured" />
-          <Line yAxisId="right" dataKey="avgFlow" data={dataForPlot2} stroke="#aa0000" name="Avg Flow" />
+          <Line yAxisId="right" dataKey="avgFlow" data={avgFlowData} stroke="#aa0000" name="Avg Flow" />
           {/* <Line yAxisId="left" name="Regression" type="linear" dataKey="massPerPulse" data={regressionData} stroke="#82ca9d" dot={false} /> */}
         </LineChart>
         <div className="mt-4">
