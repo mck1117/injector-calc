@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, Tooltip } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import regression from 'regression';
 
 import './App.css';
@@ -42,9 +42,9 @@ const App: React.FC = () => {
     setRows(newRows);
   }, [rows]);
 
-  const addRow = () => {
+  const addRow = useCallback(() => {
     setRows([...rows, { }]);
-  };
+  }, [rows]);
 
   const validRows = useMemo((): InjectorTestRowCleaned[] => {
     return rows.filter(rowIsValid)
@@ -57,7 +57,6 @@ const App: React.FC = () => {
 
   const dataForPlot = validRows.map(row => {
     const massPerPulse = row.totalMass / row.injections;
-    const totalOpenTime = row.injections * row.pulseWidth;
 
     const actualMassMg = 1e3 * row.totalMass / row.injections;
     const modelMass = regressionResult.predict(row.pulseWidth)[1];
@@ -66,7 +65,6 @@ const App: React.FC = () => {
     return {
       pulseWidth: row.pulseWidth,
       massPerPulse: 1e3 * massPerPulse,
-      // avgFlow: 1e3 * row.totalMass / totalOpenTime,
       err: pctError,
       modelMass,
     };
@@ -108,7 +106,7 @@ const App: React.FC = () => {
             <div>{formatRowValue(pctError)}</div>
             { !isLastRow && <button onClick={() => removeRow(index)} className="text-red-500 text-lg">&times;</button>}
           </div>;
-  }), [rows, handleInputChange, regressionResult, removeRow]);
+  }), [rows, handleInputChange, regressionResult, addRow, removeRow]);
 
   return (
     <div className="p-4 grid gap-4">
