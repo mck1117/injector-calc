@@ -16,6 +16,18 @@ type InjectorTestRowCleaned = {
   totalMass: number;
 };
 
+const rowIsValid = (row: InjectorTestRow) =>
+  row.injections && row.pulseWidth && row.totalMass &&
+      !isNaN(row.injections) && !isNaN(row.pulseWidth) && !isNaN(row.totalMass);
+
+const formatRowValue = (val: number) => {
+  if (val === undefined || isNaN(val)) {
+    return '';
+  }
+
+  return val.toFixed(1);
+}
+
 const App: React.FC = () => {
   const [rows, setRows] = useState<InjectorTestRow[]>([{ }]);
 
@@ -35,10 +47,7 @@ const App: React.FC = () => {
   };
 
   const validRows = useMemo((): InjectorTestRowCleaned[] => {
-    return rows.filter(row => 
-      row.injections && row.pulseWidth && row.totalMass &&
-      !isNaN(row.injections) && !isNaN(row.pulseWidth) && !isNaN(row.totalMass)
-    )
+    return rows.filter(rowIsValid)
     .map(r => ({injections: r.injections!, pulseWidth: r.pulseWidth!, totalMass: r.totalMass!} as InjectorTestRowCleaned));
   }, [rows]);
 
@@ -66,6 +75,8 @@ const App: React.FC = () => {
     const modelMass = regressionResult.predict(row.pulseWidth!)[1];
     const pctError = 100 * (modelMass - actualMassMg) / actualMassMg;
 
+    const isLastRow = index === rows.length - 1;
+
     return <div key={index} className="grid grid-cols-7 gap-2 items-center mb-1 text-sm">
             <input
               type="number"
@@ -84,11 +95,16 @@ const App: React.FC = () => {
               value={row.totalMass}
               onChange={e => handleInputChange(index, 'totalMass', e.target.value)}
               className="px-1 py-0.5 border rounded"
+              onBlur={() => {
+                if (isLastRow && rowIsValid(row)) {
+                  addRow();
+                }
+              }}
             />
-            <div>{actualMassMg.toFixed(1)}</div>
-            <div>{modelMass.toFixed(1)}</div>
-            <div>{pctError.toFixed(1)}</div>
-            <button onClick={() => removeRow(index)} className="text-red-500 text-lg">&times;</button>
+            <div>{formatRowValue(actualMassMg)}</div>
+            <div>{formatRowValue(modelMass)}</div>
+            <div>{formatRowValue(pctError)}</div>
+            { !isLastRow && <button onClick={() => removeRow(index)} className="text-red-500 text-lg">&times;</button>}
           </div>;
   }), [rows, handleInputChange, regressionResult, removeRow]);
 
@@ -126,8 +142,8 @@ const App: React.FC = () => {
           {/* <Line yAxisId="left" name="Regression" type="linear" dataKey="massPerPulse" data={regressionData} stroke="#82ca9d" dot={false} /> */}
         </LineChart>
         <div className="mt-4">
-          <p><strong>Flow Rate (slope):</strong> {regressionResult.equation[0].toFixed(2)} g/s</p>
-          <p><strong>Deadtime (x-intercept):</strong> {(-regressionResult.equation[1] / regressionResult.equation[0]).toFixed(2)} ms</p>
+          <p><strong>Flow Rate:</strong> {regressionResult.equation[0].toFixed(2)} g/s = {(83.333 * regressionResult.equation[0]).toFixed(1)} cc/min</p>
+          <p><strong>Deadtime:</strong> {(-regressionResult.equation[1] / regressionResult.equation[0]).toFixed(2)} ms</p>
         </div>
       </div>
     </div>
