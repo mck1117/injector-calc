@@ -54,10 +54,11 @@ const App: React.FC = () => {
   const dataForPlot = validRows.map(row => {
     const massPerPulse = row.totalMass / row.injections;
     const totalOpenTime = row.injections * row.pulseWidth;
+
     return {
       pulseWidth: row.pulseWidth,
       massPerPulse: 1e3 * massPerPulse,
-      avgFlow: 1e3 * row.totalMass / totalOpenTime
+      avgFlow: 1e3 * row.totalMass / totalOpenTime,
      };
   });
 
