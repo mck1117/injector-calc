@@ -51,20 +51,26 @@ const App: React.FC = () => {
     .map(r => ({injections: r.injections!, pulseWidth: r.pulseWidth!, totalMass: r.totalMass!} as InjectorTestRowCleaned));
   }, [rows]);
 
+  const regressionResult = regression.linear(
+    validRows.map(d => [d.pulseWidth, 1e3 * d.totalMass / d.injections])
+  );
+
   const dataForPlot = validRows.map(row => {
     const massPerPulse = row.totalMass / row.injections;
     const totalOpenTime = row.injections * row.pulseWidth;
 
+    const actualMassMg = 1e3 * row.totalMass / row.injections;
+    const modelMass = regressionResult.predict(row.pulseWidth)[1];
+    const pctError = 100 * (modelMass - actualMassMg) / actualMassMg;
+
     return {
       pulseWidth: row.pulseWidth,
       massPerPulse: 1e3 * massPerPulse,
-      avgFlow: 1e3 * row.totalMass / totalOpenTime,
-     };
+      // avgFlow: 1e3 * row.totalMass / totalOpenTime,
+      err: pctError,
+      modelMass,
+    };
   });
-
-  const regressionResult = regression.linear(
-    dataForPlot.map(d => [d.pulseWidth, d.massPerPulse])
-  );
 
   const tableRows = useMemo(() => rows.map((row, index) => {
     const actualMassMg = 1e3 * row.totalMass! / row.injections!;
@@ -104,11 +110,6 @@ const App: React.FC = () => {
           </div>;
   }), [rows, handleInputChange, regressionResult, removeRow]);
 
-  const plotRegressionData = dataForPlot.map(d => ({
-    pulseWidth: d.pulseWidth,
-    massPerPulse: regressionResult.predict(d.pulseWidth)[1],
-  }));
-
   return (
     <div className="p-4 grid gap-4">
       <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '0.5rem' }}>
@@ -128,19 +129,19 @@ const App: React.FC = () => {
         <p/>
 
         <LineChart
-          width={600}
-          height={300}
-          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          width={800}
+          height={600}
+          margin={{ top: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis type="number" dataKey="pulseWidth" label={{ value: 'pulse width (ms)', position: 'insideBottomRight', offset: -5 }} domain={['auto', 'auto']} />
-          <YAxis type="number" yAxisId="left" label={{ value: 'mass per pulse (mg)', angle: -90, position: 'insideLeft' }} domain={['auto', 'auto']} />
-          <YAxis type="number" yAxisId="right" orientation='right' label={{ value: 'avg flow (g/s)', angle: -90, position: 'insideLeft' }} domain={['auto', 'auto']} />
+          <CartesianGrid strokeDasharray="5 8" />
+          <XAxis type="number" dataKey="pulseWidth" label={{ value: 'pulse width (ms)', position: 'insideBottomRight', offset: -5 }} domain={['auto', 'auto']} scale="log" />
+          <YAxis type="number" yAxisId="left" label={{ value: 'mass per pulse (mg)', angle: -90, position: 'insideLeft' }} domain={['auto', 'auto']} scale="log" />
+          <YAxis type="number" yAxisId="right" orientation='right' label={{ value: 'model err (%)', angle: -90, position: 'insideLeft' }} domain={['auto', 'auto']} />
 
           <Legend />
           <Line yAxisId="left" dataKey="massPerPulse" data={dataForPlot} stroke="#008888" name="Measured" />
-          <Line yAxisId="right" dataKey="avgFlow" data={dataForPlot} stroke="#aa0000" name="Avg Flow" />
-          <Line yAxisId="left" name="Regression" type="linear" dataKey="massPerPulse" data={plotRegressionData} stroke="#82ca9d" dot={false} />
+          <Line yAxisId="right" dataKey="err" data={dataForPlot} stroke="#aa0000" name="Model Err" />
+          <Line yAxisId="left" dataKey="modelMass" data={dataForPlot} stroke="#82ca9d" name="model" type="linear" dot={false} />
         </LineChart>
         <div className="mt-4">
           <p><strong>Flow Rate:</strong> {regressionResult.equation[0].toFixed(2)} g/s = {(83.333 * regressionResult.equation[0]).toFixed(1)} cc/min</p>
