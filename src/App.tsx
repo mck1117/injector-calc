@@ -66,11 +66,6 @@ const App: React.FC = () => {
     dataForPlot.map(d => [d.pulseWidth, d.massPerPulse])
   );
 
-  const regressionData = dataForPlot.map(d => ({
-    pulseWidth: d.pulseWidth,
-    massPerPulse: regressionResult.predict(d.pulseWidth)[1],
-  }));
-
   const tableRows = useMemo(() => rows.map((row, index) => {
     const actualMassMg = 1e3 * row.totalMass! / row.injections!;
     const modelMass = regressionResult.predict(row.pulseWidth!)[1];
@@ -109,6 +104,11 @@ const App: React.FC = () => {
           </div>;
   }), [rows, handleInputChange, regressionResult, removeRow]);
 
+  const plotRegressionData = dataForPlot.map(d => ({
+    pulseWidth: d.pulseWidth,
+    massPerPulse: regressionResult.predict(d.pulseWidth)[1],
+  }));
+
   return (
     <div className="p-4 grid gap-4">
       <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '0.5rem' }}>
@@ -140,7 +140,7 @@ const App: React.FC = () => {
           <Legend />
           <Line yAxisId="left" dataKey="massPerPulse" data={dataForPlot} stroke="#008888" name="Measured" />
           <Line yAxisId="right" dataKey="avgFlow" data={dataForPlot} stroke="#aa0000" name="Avg Flow" />
-          {/* <Line yAxisId="left" name="Regression" type="linear" dataKey="massPerPulse" data={regressionData} stroke="#82ca9d" dot={false} /> */}
+          <Line yAxisId="left" name="Regression" type="linear" dataKey="massPerPulse" data={plotRegressionData} stroke="#82ca9d" dot={false} />
         </LineChart>
         <div className="mt-4">
           <p><strong>Flow Rate:</strong> {regressionResult.equation[0].toFixed(2)} g/s = {(83.333 * regressionResult.equation[0]).toFixed(1)} cc/min</p>
