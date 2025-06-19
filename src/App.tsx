@@ -53,13 +53,13 @@ const App: React.FC = () => {
 
   const dataForPlot = validRows.map(row => {
     const massPerPulse = row.totalMass / row.injections;
-    return { pulseWidth: row.pulseWidth, massPerPulse: 1e3 * massPerPulse };
-  });
-
-  const avgFlowData = validRows.map(row => {
     const totalOpenTime = row.injections * row.pulseWidth;
-    return { pulseWidth: row.pulseWidth, avgFlow: 1e3 * row.totalMass / totalOpenTime };
-  })
+    return {
+      pulseWidth: row.pulseWidth,
+      massPerPulse: 1e3 * massPerPulse,
+      avgFlow: 1e3 * row.totalMass / totalOpenTime
+     };
+  });
 
   const regressionResult = regression.linear(
     dataForPlot.map(d => [d.pulseWidth, d.massPerPulse])
@@ -138,7 +138,7 @@ const App: React.FC = () => {
 
           <Legend />
           <Line yAxisId="left" dataKey="massPerPulse" data={dataForPlot} stroke="#008888" name="Measured" />
-          <Line yAxisId="right" dataKey="avgFlow" data={avgFlowData} stroke="#aa0000" name="Avg Flow" />
+          <Line yAxisId="right" dataKey="avgFlow" data={dataForPlot} stroke="#aa0000" name="Avg Flow" />
           {/* <Line yAxisId="left" name="Regression" type="linear" dataKey="massPerPulse" data={regressionData} stroke="#82ca9d" dot={false} /> */}
         </LineChart>
         <div className="mt-4">
