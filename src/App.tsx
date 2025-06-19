@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, Tooltip } from 'recharts';
 import regression from 'regression';
 
 import './App.css';
@@ -132,6 +132,7 @@ const App: React.FC = () => {
           width={800}
           height={600}
           margin={{ top: 5 }}
+          data={dataForPlot}
         >
           <CartesianGrid strokeDasharray="5 8" />
           <XAxis type="number" dataKey="pulseWidth" label={{ value: 'pulse width (ms)', position: 'insideBottomRight', offset: -5 }} domain={['auto', 'auto']} scale="log" />
@@ -139,9 +140,9 @@ const App: React.FC = () => {
           <YAxis type="number" yAxisId="right" orientation='right' label={{ value: 'model err (%)', angle: -90, position: 'insideLeft' }} domain={['auto', 'auto']} />
 
           <Legend />
-          <Line yAxisId="left" dataKey="massPerPulse" data={dataForPlot} stroke="#008888" name="Measured" />
-          <Line yAxisId="right" dataKey="err" data={dataForPlot} stroke="#aa0000" name="Model Err" />
-          <Line yAxisId="left" dataKey="modelMass" data={dataForPlot} stroke="#82ca9d" name="model" type="linear" dot={false} />
+          <Line yAxisId="left" dataKey="massPerPulse" stroke="#008888" name="Measured" />
+          <Line yAxisId="right" dataKey="err" stroke="#aa0000" name="Model Err" />
+          <Line yAxisId="left" dataKey="modelMass" stroke="#82ca9d" name="model" type="linear" dot={false} />
         </LineChart>
         <div className="mt-4">
           <p><strong>Flow Rate:</strong> {regressionResult.equation[0].toFixed(2)} g/s = {(83.333 * regressionResult.equation[0]).toFixed(1)} cc/min</p>
