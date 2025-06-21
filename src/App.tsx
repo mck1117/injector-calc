@@ -109,7 +109,9 @@ const App: React.FC = () => {
             <div>{formatRowValue(actualMassMg)}</div>
             <div>{formatRowValue(modelMass)}</div>
             <div>{formatRowValue(pctError)}</div>
-            { !isLastRow && <button onClick={() => removeRow(index)} className="text-red-500 text-lg">&times;</button>}
+            { isLastRow
+                ? <button onClick={addRow} className="text-black-500 text-lg">Add Row</button>
+                : <button onClick={() => removeRow(index)} className="text-red-500 text-lg">&times;</button>}
           </div>;
   }), [rows, handleInputChange, regressionResult, addRow, removeRow]);
 
@@ -132,7 +134,6 @@ const App: React.FC = () => {
           <div></div>
         </div>
         {tableRows}
-        <button onClick={addRow} style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}>Add Row</button>
 
         <p/>
 
