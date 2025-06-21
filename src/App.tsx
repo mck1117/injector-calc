@@ -8,16 +8,18 @@ type InjectorTestRow = {
   injections?: number;
   pulseWidth?: number;
   totalMass?: number;
+  includeInRegression: boolean;
   id: string;
 };
 
 let nextId = 0;
-const makeRow = (): InjectorTestRow => ({ id: 'rowInput-' + nextId++ });
+const makeRow = (): InjectorTestRow => ({ id: 'rowInput-' + nextId++, includeInRegression: true });
 
 type InjectorTestRowCleaned = {
   injections: number;
   pulseWidth: number;
   totalMass: number;
+  includeInRegression: boolean;
 };
 
 const rowIsValid = (row: InjectorTestRow) =>
@@ -41,6 +43,12 @@ const App: React.FC = () => {
     setRows(newRows);
   }, [rows]);
 
+  const handleInclude = useCallback((index: number, value: boolean) => {
+    const newRows = [...rows];
+    newRows[index].includeInRegression = value;
+    setRows(newRows);
+  }, [rows]);
+
   const removeRow = useCallback((index: number) => {
     const newRows = rows.filter((_, i) => i !== index);
     setRows(newRows);
@@ -53,11 +61,13 @@ const App: React.FC = () => {
   const validRows = useMemo((): InjectorTestRowCleaned[] => {
     return rows
       .filter(rowIsValid)
-      .map(r => ({injections: r.injections!, pulseWidth: r.pulseWidth!, totalMass: r.totalMass!} as InjectorTestRowCleaned));
+      .map(r => ({injections: r.injections!, pulseWidth: r.pulseWidth!, totalMass: r.totalMass!, includeInRegression: r.includeInRegression} as InjectorTestRowCleaned));
   }, [rows]);
 
   const regressionResult = regression.linear(
-    validRows.map(d => [d.pulseWidth, 1e3 * d.totalMass / d.injections])
+    validRows
+      .filter(r => r.includeInRegression)
+      .map(d => [d.pulseWidth, 1e3 * d.totalMass / d.injections])
   );
 
   const dataForPlot = validRows.map(row => {
@@ -93,7 +103,7 @@ const App: React.FC = () => {
 
     const isLastRow = index === rows.length - 1;
 
-    return <div key={index} className="grid grid-cols-7 gap-2 items-center mb-1 text-sm">
+    return <div key={index} className="grid grid-cols-8 gap-2 items-center mb-1 text-sm">
             <input
               id={row.id}
               type="number"
@@ -118,6 +128,7 @@ const App: React.FC = () => {
                 }
               }}
             />
+            <input type="checkbox" checked={row.includeInRegression} onChange={e => handleInclude(index, e.target.checked)} />
             <div>{formatRowValue(actualMassMg)}</div>
             <div>{formatRowValue(modelMass)}</div>
             <div>{formatRowValue(pctError)}</div>
@@ -139,10 +150,11 @@ const App: React.FC = () => {
     <div className="p-4 grid gap-4">
       <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '0.5rem' }}>
         <h2 className="text-xl font-bold mb-2">Injector Calculator</h2>
-        <div className="grid grid-cols-7 gap-2 font-bold mb-2">
+        <div className="grid grid-cols-8 gap-2 font-bold mb-2">
           <div>Injections</div>
           <div>Pulse Width (ms)</div>
           <div>Total Mass (g)</div>
+          <div>Include in regression</div>
           <div>Mass Per (mg)</div>
           <div>Est Mass Per (mg)</div>
           <div>Model Err (%)</div>
