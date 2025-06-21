@@ -24,7 +24,7 @@ type InjectorTestRowCleaned = {
 
 const rowIsValid = (row: InjectorTestRow) =>
   row.injections && row.pulseWidth && row.totalMass &&
-      !isNaN(row.injections) && !isNaN(row.pulseWidth) && !isNaN(row.totalMass);
+  !isNaN(row.injections) && !isNaN(row.pulseWidth) && !isNaN(row.totalMass);
 
 const formatRowValue = (val: number) => {
   if (val === undefined || isNaN(val)) {
@@ -61,7 +61,7 @@ const App: React.FC = () => {
   const validRows = useMemo((): InjectorTestRowCleaned[] => {
     return rows
       .filter(rowIsValid)
-      .map(r => ({injections: r.injections!, pulseWidth: r.pulseWidth!, totalMass: r.totalMass!, includeInRegression: r.includeInRegression} as InjectorTestRowCleaned));
+      .map(r => ({ injections: r.injections!, pulseWidth: r.pulseWidth!, totalMass: r.totalMass!, includeInRegression: r.includeInRegression } as InjectorTestRowCleaned));
   }, [rows]);
 
   const regressionResult = regression.linear(
@@ -85,7 +85,7 @@ const App: React.FC = () => {
     };
   });
 
-  const flowRate =  regressionResult.equation[0];
+  const flowRate = regressionResult.equation[0];
   const deadtime = -regressionResult.equation[1] / flowRate;
 
   const smallPulseCorrection = validRows.map(r => {
@@ -104,38 +104,38 @@ const App: React.FC = () => {
     const isLastRow = index === rows.length - 1;
 
     return <div key={index} className="grid grid-cols-8 gap-2 items-center mb-1 text-sm">
-            <input
-              id={row.id}
-              type="number"
-              value={row.injections}
-              onChange={e => handleInputChange(index, (r, v) => r.injections = v, e.target.value)}
-              className="px-1 py-0.5 border rounded"
-            />
-            <input
-              type="number"
-              value={row.pulseWidth}
-              onChange={e => handleInputChange(index, (r, v) => r.pulseWidth = v, e.target.value)}
-              className="px-1 py-0.5 border rounded"
-            />
-            <input
-              type="number"
-              value={row.totalMass}
-              onChange={e => handleInputChange(index, (r, v) => r.totalMass = v, e.target.value)}
-              className="px-1 py-0.5 border rounded"
-              onBlur={() => {
-                if (isLastRow && rowIsValid(row)) {
-                  addRow();
-                }
-              }}
-            />
-            <input type="checkbox" checked={row.includeInRegression} onChange={e => handleInclude(index, e.target.checked)} />
-            <div>{formatRowValue(actualMassMg)}</div>
-            <div>{formatRowValue(modelMass)}</div>
-            <div>{formatRowValue(pctError)}</div>
-            { isLastRow
-                ? <button onClick={addRow} className="text-black-500 text-lg">Add Row</button>
-                : <button onClick={() => removeRow(index)} className="text-red-500 text-lg">&times;</button>}
-          </div>;
+      <input
+        id={row.id}
+        type="number"
+        value={row.injections}
+        onChange={e => handleInputChange(index, (r, v) => r.injections = v, e.target.value)}
+        className="px-1 py-0.5 border rounded"
+      />
+      <input
+        type="number"
+        value={row.pulseWidth}
+        onChange={e => handleInputChange(index, (r, v) => r.pulseWidth = v, e.target.value)}
+        className="px-1 py-0.5 border rounded"
+      />
+      <input
+        type="number"
+        value={row.totalMass}
+        onChange={e => handleInputChange(index, (r, v) => r.totalMass = v, e.target.value)}
+        className="px-1 py-0.5 border rounded"
+        onBlur={() => {
+          if (isLastRow && rowIsValid(row)) {
+            addRow();
+          }
+        }}
+      />
+      <input type="checkbox" checked={row.includeInRegression} onChange={e => handleInclude(index, e.target.checked)} />
+      <div>{formatRowValue(actualMassMg)}</div>
+      <div>{formatRowValue(modelMass)}</div>
+      <div>{formatRowValue(pctError)}</div>
+      {isLastRow
+        ? <button onClick={addRow} className="text-black-500 text-lg">Add Row</button>
+        : <button onClick={() => removeRow(index)} className="text-red-500 text-lg">&times;</button>}
+    </div>;
   }), [rows, handleInputChange, handleInclude, regressionResult, addRow, removeRow]);
 
   // Focus the last row's input when a new row is added
@@ -162,7 +162,7 @@ const App: React.FC = () => {
         </div>
         {tableRows}
 
-        <p/>
+        <p />
 
         <LineChart
           width={800}
@@ -191,10 +191,10 @@ const App: React.FC = () => {
             <div>Adder (ms)</div>
           </div>
 
-          { smallPulseCorrection.map(c => (<div className="grid grid-cols-2 gap-2 font-bold mb-2">
+          {smallPulseCorrection.map(c => (<div className="grid grid-cols-2 gap-2 font-bold mb-2">
             <div>{c.input.toFixed(3)}</div>
             <div>{c.output.toFixed(3)}</div>
-          </div>)) }
+          </div>))}
         </div>
       </div>
     </div>
