@@ -142,8 +142,8 @@ const App: React.FC = () => {
           data={dataForPlot}
         >
           <CartesianGrid strokeDasharray="5 8" />
-          <XAxis type="number" dataKey="pulseWidth" label={{ value: 'pulse width (ms)', position: 'insideBottomRight', offset: -5 }} domain={['auto', 'auto']} scale="log" />
-          <YAxis type="number" yAxisId="left" label={{ value: 'mass per pulse (mg)', angle: -90, position: 'insideLeft' }} domain={['auto', 'auto']} scale="log" />
+          <XAxis type="number" dataKey="pulseWidth" label={{ value: 'pulse width (ms)', position: 'insideBottomRight', offset: -5 }} domain={['auto', 'auto']} />
+          <YAxis type="number" yAxisId="left" label={{ value: 'mass per pulse (mg)', angle: -90, position: 'insideLeft' }} domain={['auto', 'auto']} />
           <YAxis type="number" yAxisId="right" orientation='right' label={{ value: 'model err (%)', angle: -90, position: 'insideLeft' }} domain={['auto', 'auto']} />
 
           <Legend />
