@@ -50,10 +50,6 @@ const App: React.FC = () => {
     setRows([...rows, makeRow()]);
   }, [rows]);
 
-  useEffect(() => {
-    document.getElementById(rows[rows.length - 1].id)?.focus();
-  }, [rows.length]);
-
   const validRows = useMemo((): InjectorTestRowCleaned[] => {
     return rows.filter(rowIsValid)
     .map(r => ({injections: r.injections!, pulseWidth: r.pulseWidth!, totalMass: r.totalMass!} as InjectorTestRowCleaned));
@@ -116,6 +112,11 @@ const App: React.FC = () => {
             { !isLastRow && <button onClick={() => removeRow(index)} className="text-red-500 text-lg">&times;</button>}
           </div>;
   }), [rows, handleInputChange, regressionResult, addRow, removeRow]);
+
+  // Focus the last row's input when a new row is added
+  useEffect(() => {
+    document.getElementById(rows[rows.length - 1].id)?.focus();
+  }, [rows.length]);
 
   return (
     <div className="p-4 grid gap-4">
