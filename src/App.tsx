@@ -74,6 +74,15 @@ const App: React.FC = () => {
     };
   });
 
+  const deadtime = -regressionResult.equation[1] / regressionResult.equation[0];
+
+  // const correctionValues = validRows.map(row => {
+  //   return {
+  //     mass: 1e3 * row.totalMass / row.injections,
+  //     pw: row.pulseWidth - deadtime,
+  //   };
+  // });
+
   const tableRows = useMemo(() => rows.map((row, index) => {
     const actualMassMg = 1e3 * row.totalMass! / row.injections!;
     const modelMass = regressionResult.predict(row.pulseWidth!)[1];
@@ -118,6 +127,9 @@ const App: React.FC = () => {
   // Focus the last row's input when a new row is added
   useEffect(() => {
     document.getElementById(rows[rows.length - 1].id)?.focus();
+
+    // Intentionally don't update on rows, only when the length changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows.length]);
 
   return (
@@ -155,8 +167,19 @@ const App: React.FC = () => {
         </LineChart>
         <div className="mt-4">
           <p><strong>Flow Rate:</strong> {regressionResult.equation[0].toFixed(2)} g/s = {(83.333 * regressionResult.equation[0]).toFixed(1)} cc/min</p>
-          <p><strong>Deadtime:</strong> {(-regressionResult.equation[1] / regressionResult.equation[0]).toFixed(2)} ms</p>
+          <p><strong>Deadtime:</strong> {deadtime.toFixed(2)} ms</p>
         </div>
+        {/* <div >
+          <div className="grid grid-cols-2 gap-2 font-bold mb-2">
+            <div>Pulse Mass (mg)</div>
+            <div>Pulse Width (ms)</div>
+          </div>
+
+          {  correctionValues.map(c => (<div className="grid grid-cols-2 gap-2 font-bold mb-2">
+            <div>{c.mass.toFixed(1)}</div>
+            <div>{c.pw.toFixed(3)}</div>
+          </div>)) }
+        </div> */}
       </div>
     </div>
   );
