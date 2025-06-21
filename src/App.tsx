@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import regression from 'regression';
 
@@ -8,7 +8,11 @@ type InjectorTestRow = {
   injections?: number;
   pulseWidth?: number;
   totalMass?: number;
+  id: string;
 };
+
+let nextId = 0;
+const makeRow = (): InjectorTestRow => ({ id: 'rowInput-' + nextId++ });
 
 type InjectorTestRowCleaned = {
   injections: number;
@@ -29,11 +33,11 @@ const formatRowValue = (val: number) => {
 }
 
 const App: React.FC = () => {
-  const [rows, setRows] = useState<InjectorTestRow[]>([{ }]);
+  const [rows, setRows] = useState<InjectorTestRow[]>([makeRow()]);
 
-  const handleInputChange = useCallback((index: number, field: keyof InjectorTestRow, value: string) => {
+  const handleInputChange = useCallback((index: number, mutateRow: (row: InjectorTestRow, value: number) => void, value: string) => {
     const newRows = [...rows];
-    newRows[index][field] = parseFloat(value);
+    mutateRow(newRows[index], parseFloat(value));
     setRows(newRows);
   }, [rows]);
 
@@ -43,8 +47,12 @@ const App: React.FC = () => {
   }, [rows]);
 
   const addRow = useCallback(() => {
-    setRows([...rows, { }]);
+    setRows([...rows, makeRow()]);
   }, [rows]);
+
+  useEffect(() => {
+    document.getElementById(rows[rows.length - 1].id)?.focus();
+  }, [rows.length]);
 
   const validRows = useMemo((): InjectorTestRowCleaned[] => {
     return rows.filter(rowIsValid)
@@ -79,21 +87,22 @@ const App: React.FC = () => {
 
     return <div key={index} className="grid grid-cols-7 gap-2 items-center mb-1 text-sm">
             <input
+              id={row.id}
               type="number"
               value={row.injections}
-              onChange={e => handleInputChange(index, 'injections', e.target.value)}
+              onChange={e => handleInputChange(index, (r, v) => r.injections = v, e.target.value)}
               className="px-1 py-0.5 border rounded"
             />
             <input
               type="number"
               value={row.pulseWidth}
-              onChange={e => handleInputChange(index, 'pulseWidth', e.target.value)}
+              onChange={e => handleInputChange(index, (r, v) => r.pulseWidth = v, e.target.value)}
               className="px-1 py-0.5 border rounded"
             />
             <input
               type="number"
               value={row.totalMass}
-              onChange={e => handleInputChange(index, 'totalMass', e.target.value)}
+              onChange={e => handleInputChange(index, (r, v) => r.totalMass = v, e.target.value)}
               className="px-1 py-0.5 border rounded"
               onBlur={() => {
                 if (isLastRow && rowIsValid(row)) {
