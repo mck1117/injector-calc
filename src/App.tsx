@@ -51,8 +51,9 @@ const App: React.FC = () => {
   }, [rows]);
 
   const validRows = useMemo((): InjectorTestRowCleaned[] => {
-    return rows.filter(rowIsValid)
-    .map(r => ({injections: r.injections!, pulseWidth: r.pulseWidth!, totalMass: r.totalMass!} as InjectorTestRowCleaned));
+    return rows
+      .filter(rowIsValid)
+      .map(r => ({injections: r.injections!, pulseWidth: r.pulseWidth!, totalMass: r.totalMass!} as InjectorTestRowCleaned));
   }, [rows]);
 
   const regressionResult = regression.linear(
@@ -74,14 +75,16 @@ const App: React.FC = () => {
     };
   });
 
-  const deadtime = -regressionResult.equation[1] / regressionResult.equation[0];
+  const flowRate =  regressionResult.equation[0];
+  const deadtime = -regressionResult.equation[1] / flowRate;
 
-  // const correctionValues = validRows.map(row => {
-  //   return {
-  //     mass: 1e3 * row.totalMass / row.injections,
-  //     pw: row.pulseWidth - deadtime,
-  //   };
-  // });
+  const smallPulseCorrection = validRows.map(r => {
+    const shotMass = 1e3 * r.totalMass / r.injections;
+    const modelPulse = shotMass / flowRate;
+    const actualPulse = r.pulseWidth - deadtime - modelPulse;
+
+    return { input: modelPulse, output: actualPulse };
+  });
 
   const tableRows = useMemo(() => rows.map((row, index) => {
     const actualMassMg = 1e3 * row.totalMass! / row.injections!;
@@ -166,20 +169,21 @@ const App: React.FC = () => {
           <Line yAxisId="left" dataKey="modelMass" stroke="#82ca9d" name="model" type="linear" dot={false} />
         </LineChart>
         <div className="mt-4">
-          <p><strong>Flow Rate:</strong> {regressionResult.equation[0].toFixed(2)} g/s = {(83.333 * regressionResult.equation[0]).toFixed(1)} cc/min</p>
+          <p><strong>Flow Rate:</strong> {flowRate.toFixed(2)} g/s = {(83.333 * flowRate).toFixed(1)} cc/min</p>
           <p><strong>Deadtime:</strong> {deadtime.toFixed(2)} ms</p>
         </div>
-        {/* <div >
+        <h2 className="text-xl font-bold mb-2">Small Pulse Correction Table</h2>
+        <div >
           <div className="grid grid-cols-2 gap-2 font-bold mb-2">
-            <div>Pulse Mass (mg)</div>
-            <div>Pulse Width (ms)</div>
+            <div>Raw pulse (ms)</div>
+            <div>Adder (ms)</div>
           </div>
 
-          {  correctionValues.map(c => (<div className="grid grid-cols-2 gap-2 font-bold mb-2">
-            <div>{c.mass.toFixed(1)}</div>
-            <div>{c.pw.toFixed(3)}</div>
+          { smallPulseCorrection.map(c => (<div className="grid grid-cols-2 gap-2 font-bold mb-2">
+            <div>{c.input.toFixed(3)}</div>
+            <div>{c.output.toFixed(3)}</div>
           </div>)) }
-        </div> */}
+        </div>
       </div>
     </div>
   );
