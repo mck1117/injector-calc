@@ -136,7 +136,7 @@ const App: React.FC = () => {
                 ? <button onClick={addRow} className="text-black-500 text-lg">Add Row</button>
                 : <button onClick={() => removeRow(index)} className="text-red-500 text-lg">&times;</button>}
           </div>;
-  }), [rows, handleInputChange, regressionResult, addRow, removeRow]);
+  }), [rows, handleInputChange, handleInclude, regressionResult, addRow, removeRow]);
 
   // Focus the last row's input when a new row is added
   useEffect(() => {
