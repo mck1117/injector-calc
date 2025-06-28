@@ -70,6 +70,9 @@ const App: React.FC = () => {
       .map(d => [d.pulseWidth, 1e3 * d.totalMass / d.injections])
   );
 
+  const flowRate = regressionResult.equation[0];
+  const deadtime = -regressionResult.equation[1] / flowRate;
+
   const dataForPlot = validRows.map(row => {
     const massPerPulse = row.totalMass / row.injections;
 
@@ -77,23 +80,18 @@ const App: React.FC = () => {
     const modelMass = regressionResult.predict(row.pulseWidth)[1];
     const pctError = 100 * (modelMass - actualMassMg) / actualMassMg;
 
+    // small pulse correction math
+    const modelPulse = 1e3 * massPerPulse / flowRate;
+    const smallPulseAdder = row.pulseWidth - deadtime - modelPulse;
+
     return {
       pulseWidth: row.pulseWidth,
       massPerPulse: 1e3 * massPerPulse,
       err: pctError,
       modelMass,
+      modelPulse,
+      smallPulseAdder
     };
-  });
-
-  const flowRate = regressionResult.equation[0];
-  const deadtime = -regressionResult.equation[1] / flowRate;
-
-  const smallPulseCorrection = validRows.map(r => {
-    const shotMass = 1e3 * r.totalMass / r.injections;
-    const modelPulse = shotMass / flowRate;
-    const actualPulse = r.pulseWidth - deadtime - modelPulse;
-
-    return { input: modelPulse, output: actualPulse };
   });
 
   const tableRows = useMemo(() => rows.map((row, index) => {
@@ -186,15 +184,8 @@ const App: React.FC = () => {
         </div>
         <h2 className="text-xl font-bold mb-2">Small Pulse Correction Table</h2>
         <div >
-          <div className="grid grid-cols-2 gap-2 font-bold mb-2">
-            <div>Raw pulse (ms)</div>
-            <div>Adder (ms)</div>
-          </div>
-
-          {smallPulseCorrection.map(c => (<div className="grid grid-cols-2 gap-2 font-bold mb-2">
-            <div>{c.input.toFixed(3)}</div>
-            <div>{c.output.toFixed(3)}</div>
-          </div>))}
+          <div>{dataForPlot.map(c => c.smallPulseAdder.toFixed(3)).join(', ')}</div>
+          <div>{dataForPlot.map(c => c.modelPulse.toFixed(3)).join(', ')}</div>
         </div>
       </div>
     </div>
